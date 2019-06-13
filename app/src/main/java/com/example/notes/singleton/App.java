@@ -9,7 +9,6 @@ import com.example.notes.database.AppDatabase;
 public class App extends Application {
 
     public static App instance;
-
     private AppDatabase database;
 
     @Override
@@ -17,7 +16,7 @@ public class App extends Application {
         super.onCreate();
 
         instance = this;
-        database = Room.databaseBuilder(this, AppDatabase.class, "NoteManager").allowMainThreadQueries().build();
+        database = Room.databaseBuilder(this, AppDatabase.class, "NoteManager").build();
     }
 
     public static App getInstance(){
@@ -27,4 +26,5 @@ public class App extends Application {
     public AppDatabase getDatabase() {
         return database;
     }
+
 }

@@ -10,22 +10,25 @@ import com.example.notes.entities.Note;
 
 import java.util.List;
 
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+
 @Dao
 public interface NoteDAO {
 
     @Insert
-    void addNote(Note note);
+    long addNote(Note note);
 
     @Query("SELECT * FROM note WHERE id = :id")
-    Note getNote(int id);
+    Maybe<Note> getNote(int id);
 
     @Query("SELECT * FROM note")
-    List<Note> getAllNotes();
+    Flowable<List<Note>> getAllNotes();
 
     @Update
     int updateNote(Note note);
 
     @Delete
-    void deleteNote(Note note);
+    int deleteNote(Note note);
 
 }

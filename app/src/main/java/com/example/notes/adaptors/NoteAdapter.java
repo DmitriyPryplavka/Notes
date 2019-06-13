@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
-    private List<Note> mDataset = new ArrayList<>();
+    private List<Note> mDataset;
     private List<Note> datasetCopy = new ArrayList<>();
     private final OnItemClickListener listener;
     // Provide a reference to the views for each data item
@@ -29,14 +29,14 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
 
     // Provide a suitable constructor (depends on the kind of dataset)
     public NoteAdapter(List<Note> myDataset, OnItemClickListener listener){
-        mDataset.addAll(myDataset);
-        datasetCopy.addAll(myDataset);
+        mDataset = myDataset;
         this.listener = listener;
     }
 
     // Create new views (invoked by the layout manager)
+    @NonNull
     @Override
-    public NoteHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public NoteHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         //create a new view
         ConstraintLayout v = (ConstraintLayout) LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.holder, parent, false);
@@ -48,8 +48,8 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
     @Override
     public void onBindViewHolder(@NonNull NoteHolder holder, int position) {
         // - get element from your dataset at this position
-        // - replace the contents of the view with that element
         // - add onClickListener to the holder
+        // - replace the contents of the view with that element
         holder.bind(holder, listener, mDataset.get(position));
 
     }
@@ -61,6 +61,9 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
     }
 
     public void filter(String text) {
+        if (datasetCopy.isEmpty()) {
+            datasetCopy.addAll(mDataset);
+        }
         mDataset.clear();
         if (text.isEmpty()){
             mDataset.addAll(datasetCopy);

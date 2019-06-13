@@ -14,6 +14,8 @@ import com.example.notes.entities.Note;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.util.Log;
 import android.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -24,16 +26,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
-    private RecyclerView recyclerView;
     private NoteAdapter mAdapter;
-    private RecyclerView.LayoutManager layoutManager;
-    private List<Note> myDataset;
-    private AppDatabase db;
+    private List<Note> myDataset = new ArrayList<>();
     private NoteDAO noteDAO;
+    private final CompositeDisposable disposable = new CompositeDisposable();
+
 
     public static String EXTRA_NOTE_ID = "com.example.notes.NoteID";
 
@@ -49,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         Drawable drawable = ContextCompat.getDrawable(getApplicationContext(), android.R.drawable.ic_menu_sort_by_size);
         toolbar.setOverflowIcon(drawable);
 
-        db = App.getInstance().getDatabase();
+        AppDatabase db = App.getInstance().getDatabase();
         noteDAO = db.noteDAO();
         initList();
 
@@ -76,9 +83,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
             startActivity(intent);
         });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -111,14 +116,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initList() {
-        myDataset = noteDAO.getAllNotes();
-        //Sort list of notes, new notes first
-        Collections.sort(myDataset, (n1, n2) -> n2.getDateTime().compareTo(n1.getDateTime()));
+        disposable.add(noteDAO.getAllNotes()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(notes -> {
+                    myDataset.addAll(notes);
+                    //Sort list of notes, new notes first
+                    Collections.sort(myDataset, (n1, n2) -> n2.getDateTime().compareTo(n1.getDateTime()));
+                    mAdapter.notifyDataSetChanged();
+                }, throwable -> Log.e(MainActivity.class.getSimpleName(), "Unable to select notes list from the database", throwable))
+        );
 
-        recyclerView = findViewById(R.id.myRecyclerView);
+        RecyclerView recyclerView = findViewById(R.id.myRecyclerView);
         recyclerView.addItemDecoration(new DividerItemDecoration(recyclerView.getContext(), DividerItemDecoration.VERTICAL));
         // use a linear layout manager
-        layoutManager = new LinearLayoutManager(this);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new NoteAdapter(myDataset, viewHolder -> {
@@ -127,5 +139,12 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
         recyclerView.setAdapter(mAdapter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        disposable.clear();
     }
 }
