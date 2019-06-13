@@ -6,7 +6,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notes.R;
-import com.example.notes.adaptors.NoteAdapter;
+import com.example.notes.adapters.NoteAdapter;
 import com.example.notes.entities.Note;
 
 public class NoteHolder extends RecyclerView.ViewHolder {

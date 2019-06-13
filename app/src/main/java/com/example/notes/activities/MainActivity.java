@@ -6,10 +6,11 @@ import android.os.Bundle;
 
 import com.example.notes.R;
 import com.example.notes.dao.NoteDAO;
+import com.example.notes.diffutils.NoteDiffUtilCallback;
 import com.example.notes.singleton.App;
 import com.example.notes.database.AppDatabase;
 import com.example.notes.enums.SortOrder;
-import com.example.notes.adaptors.NoteAdapter;
+import com.example.notes.adapters.NoteAdapter;
 import com.example.notes.entities.Note;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -19,6 +20,7 @@ import android.util.Log;
 import android.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -120,10 +122,14 @@ public class MainActivity extends AppCompatActivity {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(notes -> {
+                    NoteDiffUtilCallback noteDiffUtilCallback = new NoteDiffUtilCallback(myDataset, notes);
+                    DiffUtil.DiffResult noteDiffResult = DiffUtil.calculateDiff(noteDiffUtilCallback);
+
                     myDataset.addAll(notes);
                     //Sort list of notes, new notes first
                     Collections.sort(myDataset, (n1, n2) -> n2.getDateTime().compareTo(n1.getDateTime()));
-                    mAdapter.notifyDataSetChanged();
+
+                    noteDiffResult.dispatchUpdatesTo(mAdapter);
                 }, throwable -> Log.e(MainActivity.class.getSimpleName(), "Unable to select notes list from the database", throwable))
         );
 

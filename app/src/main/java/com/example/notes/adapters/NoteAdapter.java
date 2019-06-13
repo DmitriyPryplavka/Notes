@@ -1,13 +1,15 @@
-package com.example.notes.adaptors;
+package com.example.notes.adapters;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.notes.R;
+import com.example.notes.diffutils.NoteDiffUtilCallback;
 import com.example.notes.entities.Note;
 import com.example.notes.enums.SortOrder;
 import com.example.notes.holders.NoteHolder;
@@ -75,15 +77,26 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
                 }
             }
         }
-        notifyDataSetChanged();
+
+        NoteDiffUtilCallback noteDiffUtilCallback = new NoteDiffUtilCallback(datasetCopy, mDataset);
+        DiffUtil.DiffResult noteDiffResult = DiffUtil.calculateDiff(noteDiffUtilCallback);
+
+        noteDiffResult.dispatchUpdatesTo(this);
     }
 
     public void sort(SortOrder so){
+        if (datasetCopy.isEmpty()) {
+            datasetCopy.addAll(mDataset);
+        }
         if (so == SortOrder.NewFirst) {
             Collections.sort(mDataset, (n1, n2) -> n2.getDateTime().compareTo(n1.getDateTime()));
         } else {
             Collections.sort(mDataset, (n1, n2) -> n1.getDateTime().compareTo(n2.getDateTime()));
         }
-        notifyDataSetChanged();
+
+        NoteDiffUtilCallback noteDiffUtilCallback = new NoteDiffUtilCallback(datasetCopy, mDataset);
+        DiffUtil.DiffResult noteDiffResult = DiffUtil.calculateDiff(noteDiffUtilCallback, false);
+
+        noteDiffResult.dispatchUpdatesTo(this);
     }
 }
