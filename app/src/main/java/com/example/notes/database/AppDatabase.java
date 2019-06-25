@@ -10,5 +10,5 @@ import com.example.notes.entities.Note;
 @Database(entities = {Note.class}, version = 1, exportSchema = false)
 @TypeConverters({Converter.class})
 public abstract class AppDatabase extends RoomDatabase {
-    public abstract NoteDAO noteDAO();
+    public abstract NoteDAO getNoteDAO();
 }

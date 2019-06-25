@@ -11,11 +11,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.notes.R;
 import com.example.notes.diffutils.NoteDiffUtilCallback;
 import com.example.notes.entities.Note;
-import com.example.notes.enums.SortOrder;
 import com.example.notes.holders.NoteHolder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
@@ -53,7 +51,6 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
         // - add onClickListener to the holder
         // - replace the contents of the view with that element
         holder.bind(holder, listener, mDataset.get(position));
-
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -78,24 +75,16 @@ public class NoteAdapter extends RecyclerView.Adapter<NoteHolder> {
             }
         }
 
-        NoteDiffUtilCallback noteDiffUtilCallback = new NoteDiffUtilCallback(datasetCopy, mDataset);
-        DiffUtil.DiffResult noteDiffResult = DiffUtil.calculateDiff(noteDiffUtilCallback);
-
-        noteDiffResult.dispatchUpdatesTo(this);
+        updateData(datasetCopy, mDataset);
     }
 
-    public void sort(SortOrder so){
-        if (datasetCopy.isEmpty()) {
-            datasetCopy.addAll(mDataset);
-        }
-        if (so == SortOrder.NewFirst) {
-            Collections.sort(mDataset, (n1, n2) -> n2.getDateTime().compareTo(n1.getDateTime()));
-        } else {
-            Collections.sort(mDataset, (n1, n2) -> n1.getDateTime().compareTo(n2.getDateTime()));
-        }
+    public List<Note> getData(){
+        return mDataset;
+    }
 
-        NoteDiffUtilCallback noteDiffUtilCallback = new NoteDiffUtilCallback(datasetCopy, mDataset);
-        DiffUtil.DiffResult noteDiffResult = DiffUtil.calculateDiff(noteDiffUtilCallback, false);
+    public void updateData(List<Note> oldList, List<Note> newList){
+        NoteDiffUtilCallback noteDiffUtilCallback = new NoteDiffUtilCallback(oldList, newList);
+        DiffUtil.DiffResult noteDiffResult = DiffUtil.calculateDiff(noteDiffUtilCallback);
 
         noteDiffResult.dispatchUpdatesTo(this);
     }

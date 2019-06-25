@@ -7,6 +7,7 @@ import androidx.room.Query;
 import androidx.room.Update;
 
 import com.example.notes.entities.Note;
+import com.example.notes.presenters.BasePresenter;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 
 @Dao
-public interface NoteDAO {
+public interface NoteDAO extends BasePresenter.Model {
 
     @Insert
     long addNote(Note note);
